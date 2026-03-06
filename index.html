@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SkyIQ — Smart Flight Analytics</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #050a14;
+    --surface: #0c1526;
+    --surface2: #111e35;
+    --border: #1a2d4a;
+    --accent: #00d4ff;
+    --accent2: #ff6b35;
+    --accent3: #7fff6b;
+    --text: #e8f4ff;
+    --muted: #5a7a99;
+    --card: #0d1e33;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* BG grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(5,10,20,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.4rem; font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--accent);
+  }
+  .logo span { color: var(--text); }
+
+  .nav-links { display: flex; gap: 2rem; }
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: color 0.2s;
+    cursor: pointer;
+  }
+  .nav-links a:hover, .nav-links a.active { color: var(--accent); }
+
+  .nav-badge {
+    background: var(--accent);
+    color: var(--bg);
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 2px;
+    letter-spacing: 1px;
+    font-family: 'Syne', sans-serif;
+  }
+
+  /* PAGES */
+  .page { display: none; position: relative; z-index: 1; }
+  .page.active { display: block; }
+
+  /* HERO */
+  .hero {
+    min-height: calc(100vh - 64px);
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    text-align: center;
+    padding: 4rem 2rem;
+    position: relative;
+  }
+
+  .hero-eyebrow {
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.2s forwards;
+  }
+
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(3rem, 8vw, 7rem);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -3px;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.4s forwards;
+  }
+
+  .hero h1 .line2 {
+    color: transparent;
+    -webkit-text-stroke: 1px var(--accent);
+  }
+
+  .hero-sub {
+    max-width: 480px;
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1.8;
+    margin-bottom: 2.5rem;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.6s forwards;
+  }
+
+  .hero-ctas {
+    display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.8s forwards;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 12px 28px;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,212,255,0.35); }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 12px 28px;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  .stats-row {
+    display: flex; gap: 3rem; margin-top: 5rem;
+    opacity: 0;
+    animation: fadeUp 0.6s 1s forwards;
+  }
+  .stat { text-align: center; }
+  .stat-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 2rem; font-weight: 800;
+    color: var(--accent);
+  }
+  .stat-label { font-size: 0.65rem; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
+
+  /* SECTION WRAPPER */
+  .section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 5rem 2rem;
+  }
+
+  .section-label {
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    margin-bottom: 3rem;
+  }
+
+  /* PREDICT PAGE */
+  .predict-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  .predict-form-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 2rem;
+    position: relative;
+  }
+
+  .predict-form-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+  }
+
+  .form-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+  .form-group.full { grid-column: 1 / -1; }
+
+  label {
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  select, input[type="number"], input[type="text"] {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: none;
+    width: 100%;
+  }
+
+  select:focus, input:focus { border-color: var(--accent); }
+
+  select option { background: var(--surface); }
+
+  .predict-btn {
+    margin-top: 1.5rem;
+    width: 100%;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 14px;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+  .predict-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+  /* RESULT CARD */
+  .result-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 2rem;
+    position: relative;
+    display: flex; flex-direction: column; gap: 1.5rem;
+  }
+
+  .result-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent3), transparent);
+  }
+
+  .result-price-block {
+    text-align: center;
+    padding: 2rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+  }
+
+  .result-label {
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+
+  .result-price {
+    font-family: 'Syne', sans-serif;
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: var(--accent3);
+    letter-spacing: -2px;
+  }
+
+  .result-range {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 0.4rem;
+  }
+
+  .insights-list { display: flex; flex-direction: column; gap: 0.75rem; }
+
+  .insight-item {
+    display: flex; align-items: flex-start; gap: 0.75rem;
+    padding: 0.75rem;
+    background: var(--surface2);
+    border-left: 2px solid var(--accent);
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .insight-dot {
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 6px;
+  }
+
+  .feature-importance {
+    display: flex; flex-direction: column; gap: 0.6rem;
+  }
+
+  .fi-row { display: flex; flex-direction: column; gap: 0.3rem; }
+  .fi-label { font-size: 0.7rem; display: flex; justify-content: space-between; }
+  .fi-bar-bg { background: var(--surface2); height: 6px; }
+  .fi-bar { height: 6px; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width 1s ease; }
+
+  /* SIMULATOR */
+  .sim-layout {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  .sim-controls {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    position: relative;
+  }
+
+  .sim-controls::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent2), transparent);
+  }
+
+  .slider-group { margin-bottom: 1.5rem; }
+
+  .slider-header { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
+  .slider-name { font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+  .slider-val { font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 700; color: var(--accent); }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 2px;
+    background: var(--border);
+    outline: none;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px;
+    background: var(--accent);
+    cursor: pointer;
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  }
+
+  .sim-toggle-row {
+    display: flex; gap: 0.5rem; margin-bottom: 1.5rem;
+  }
+
+  .toggle-btn {
+    flex: 1;
+    padding: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    transition: all 0.2s;
+  }
+  .toggle-btn.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+  .sim-results { display: flex; flex-direction: column; gap: 1.5rem; }
+
+  .sim-compare {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+  }
+
+  .compare-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    background: var(--surface2);
+  }
+
+  .compare-airline { font-size: 0.8rem; }
+  .compare-price {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 800;
+  }
+
+  .compare-delta {
+    font-size: 0.75rem;
+    padding: 3px 8px;
+  }
+  .delta-up { background: rgba(255,107,53,0.15); color: var(--accent2); }
+  .delta-down { background: rgba(127,255,107,0.15); color: var(--accent3); }
+
+  /* ANALYTICS */
+  .analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .analytics-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    position: relative;
+  }
+
+  .analytics-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0.4;
+  }
+
+  .analytics-card-title {
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+
+  .bar-chart { display: flex; flex-direction: column; gap: 0.6rem; }
+  .bar-row { display: flex; align-items: center; gap: 0.75rem; }
+  .bar-name { font-size: 0.7rem; color: var(--muted); width: 80px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bar-track { flex: 1; height: 8px; background: var(--surface2); }
+  .bar-fill { height: 8px; transition: width 1.2s ease; }
+  .bar-num { font-size: 0.7rem; font-family: 'Syne', sans-serif; font-weight: 700; width: 50px; text-align: right; }
+
+  .route-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+  .route-table th {
+    text-align: left;
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 0 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .route-table td { padding: 0.6rem 0; border-bottom: 1px solid rgba(26,45,74,0.5); }
+  .route-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 0.6rem;
+    letter-spacing: 1px;
+  }
+  .badge-exp { background: rgba(255,107,53,0.15); color: var(--accent2); }
+  .badge-cheap { background: rgba(127,255,107,0.15); color: var(--accent3); }
+
+  .big-analytics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  .donut-wrap { display: flex; justify-content: center; align-items: center; padding: 1rem 0; }
+
+  svg.donut-chart { transform: rotate(-90deg); }
+
+  .time-bars { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; padding-top: 0.5rem; }
+  .time-col { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; }
+  .time-bar-wrap { width: 100%; height: 80px; display: flex; align-items: flex-end; }
+  .time-bar { width: 100%; background: linear-gradient(180deg, var(--accent), rgba(0,212,255,0.2)); transition: height 1s ease; }
+  .time-label { font-size: 0.6rem; color: var(--muted); letter-spacing: 1px; }
+  .time-pct { font-family: 'Syne', sans-serif; font-size: 0.8rem; font-weight: 700; color: var(--accent); }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .pulse-dot {
+    width: 8px; height: 8px;
+    background: var(--accent3);
+    border-radius: 50%;
+    display: inline-block;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.6); }
+  }
+
+  /* TICKER */
+  .ticker {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 0;
+    overflow: hidden;
+    position: relative;
+  }
+  .ticker-inner {
+    display: flex; gap: 4rem;
+    animation: ticker 20s linear infinite;
+    white-space: nowrap;
+  }
+  .ticker-item { font-size: 0.7rem; color: var(--muted); display: flex; align-items: center; gap: 0.4rem; }
+  .ticker-item .up { color: var(--accent3); }
+  .ticker-item .dn { color: var(--accent2); }
+  @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* MOBILE */
+  @media (max-width: 768px) {
+    .predict-grid, .sim-layout, .analytics-grid, .big-analytics { grid-template-columns: 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+    .stats-row { gap: 1.5rem; }
+    .hero h1 { letter-spacing: -2px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Sky<span>IQ</span></div>
+  <div class="nav-links">
+    <a onclick="showPage('home')" class="active" id="nav-home">Home</a>
+    <a onclick="showPage('predict')" id="nav-predict">Predict</a>
+    <a onclick="showPage('simulator')" id="nav-simulator">Simulator</a>
+    <a onclick="showPage('analytics')" id="nav-analytics">Analytics</a>
+  </div>
+  <div class="nav-badge">BETA</div>
+</nav>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-inner">
+    <span class="ticker-item">IndiGo DEL→BOM <span class="up">₹4,230 ▲2.1%</span></span>
+    <span class="ticker-item">Air India DEL→COK <span class="dn">₹6,890 ▼0.8%</span></span>
+    <span class="ticker-item">SpiceJet BOM→HYD <span class="up">₹3,120 ▲1.4%</span></span>
+    <span class="ticker-item">Vistara DEL→BLR <span class="up">₹7,450 ▲3.2%</span></span>
+    <span class="ticker-item">GoAir MAA→DEL <span class="dn">₹5,600 ▼1.1%</span></span>
+    <span class="ticker-item">Jet Airways DEL→COK <span class="up">₹8,200 ▲0.5%</span></span>
+    <!-- duplicate for seamless loop -->
+    <span class="ticker-item">IndiGo DEL→BOM <span class="up">₹4,230 ▲2.1%</span></span>
+    <span class="ticker-item">Air India DEL→COK <span class="dn">₹6,890 ▼0.8%</span></span>
+    <span class="ticker-item">SpiceJet BOM→HYD <span class="up">₹3,120 ▲1.4%</span></span>
+    <span class="ticker-item">Vistara DEL→BLR <span class="up">₹7,450 ▲3.2%</span></span>
+    <span class="ticker-item">GoAir MAA→DEL <span class="dn">₹5,600 ▼1.1%</span></span>
+    <span class="ticker-item">Jet Airways DEL→COK <span class="up">₹8,200 ▲0.5%</span></span>
+  </div>
+</div>
+
+<!-- ============ HOME ============ -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <div class="hero-eyebrow"><span class="pulse-dot"></span> &nbsp; Live Flight Intelligence</div>
+    <h1>Smart Flight<br><span class="line2">Analytics</span></h1>
+    <p class="hero-sub">Predict ticket prices, simulate fare changes, and uncover hidden patterns in Indian aviation data — powered by machine learning.</p>
+    <div class="hero-ctas">
+      <button class="btn-primary" onclick="showPage('predict')">Predict Price →</button>
+      <button class="btn-secondary" onclick="showPage('analytics')">View Analytics</button>
+    </div>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-val">10,683</div><div class="stat-label">Flights Analysed</div></div>
+      <div class="stat"><div class="stat-val">6</div><div class="stat-label">Airlines</div></div>
+      <div class="stat"><div class="stat-val">93.4%</div><div class="stat-label">R² Accuracy</div></div>
+      <div class="stat"><div class="stat-val">₹480</div><div class="stat-label">Avg MAE</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PREDICT ============ -->
+<div class="page" id="page-predict">
+  <div class="section">
+    <div class="section-label">// ML Model</div>
+    <div class="section-title">Price Prediction</div>
+
+    <div class="predict-grid">
+      <!-- FORM -->
+      <div class="predict-form-card">
+        <div class="form-title">✈ Enter Flight Details</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Airline</label>
+            <select id="p-airline" onchange="updatePrediction()">
+              <option>IndiGo</option>
+              <option>Air India</option>
+              <option>Jet Airways</option>
+              <option>SpiceJet</option>
+              <option>Vistara</option>
+              <option>GoAir</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Total Stops</label>
+            <select id="p-stops" onchange="updatePrediction()">
+              <option value="0">Non-stop</option>
+              <option value="1" selected>1 Stop</option>
+              <option value="2">2 Stops</option>
+              <option value="3">3 Stops</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Source</label>
+            <select id="p-src" onchange="updatePrediction()">
+              <option>Delhi</option>
+              <option>Mumbai</option>
+              <option>Kolkata</option>
+              <option>Chennai</option>
+              <option>Banglore</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Destination</label>
+            <select id="p-dst" onchange="updatePrediction()">
+              <option>Cochin</option>
+              <option>Bangalore</option>
+              <option>Hyderabad</option>
+              <option>New Delhi</option>
+              <option>Kolkata</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Journey Day</label>
+            <input type="number" id="p-day" value="15" min="1" max="31" onchange="updatePrediction()"/>
+          </div>
+          <div class="form-group">
+            <label>Journey Month</label>
+            <select id="p-month" onchange="updatePrediction()">
+              <option value="1">January</option><option value="2">February</option>
+              <option value="3">March</option><option value="4" selected>April</option>
+              <option value="5">May</option><option value="6">June</option>
+              <option value="7">July</option><option value="8">August</option>
+              <option value="9">September</option><option value="10">October</option>
+              <option value="11">November</option><option value="12">December</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Departure Hour</label>
+            <input type="number" id="p-hour" value="10" min="0" max="23" onchange="updatePrediction()"/>
+          </div>
+          <div class="form-group">
+            <label>Duration (mins)</label>
+            <input type="number" id="p-dur" value="180" min="30" max="900" onchange="updatePrediction()"/>
+          </div>
+        </div>
+        <button class="predict-btn" onclick="runPrediction()">⚡ Predict Ticket Price</button>
+      </div>
+
+      <!-- RESULT -->
+      <div class="result-card">
+        <div class="form-title">📊 Prediction Result</div>
+
+        <div class="result-price-block">
+          <div class="result-label">Estimated Price</div>
+          <div class="result-price" id="result-price">₹6,540</div>
+          <div class="result-range" id="result-range">Expected range: ₹6,200 – ₹6,900</div>
+        </div>
+
+        <div>
+          <div class="analytics-card-title" style="margin-bottom:0.75rem;">Key Insights</div>
+          <div class="insights-list">
+            <div class="insight-item"><div class="insight-dot"></div>Non-stop flights on this route cost ~15% more on average.</div>
+            <div class="insight-item"><div class="insight-dot"></div>Evening departures (18:00–21:00) are typically 10% pricier.</div>
+            <div class="insight-item"><div class="insight-dot"></div>Booking 30+ days ahead can save up to ₹1,200.</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="analytics-card-title" style="margin-bottom:0.75rem;">Feature Importance</div>
+          <div class="feature-importance" id="fi-bars">
+            <div class="fi-row">
+              <div class="fi-label"><span>Duration</span><span style="color:var(--accent)">87%</span></div>
+              <div class="fi-bar-bg"><div class="fi-bar" style="width:87%"></div></div>
+            </div>
+            <div class="fi-row">
+              <div class="fi-label"><span>Airline</span><span style="color:var(--accent)">74%</span></div>
+              <div class="fi-bar-bg"><div class="fi-bar" style="width:74%"></div></div>
+            </div>
+            <div class="fi-row">
+              <div class="fi-label"><span>Total Stops</span><span style="color:var(--accent)">61%</span></div>
+              <div class="fi-bar-bg"><div class="fi-bar" style="width:61%"></div></div>
+            </div>
+            <div class="fi-row">
+              <div class="fi-label"><span>Departure Hour</span><span style="color:var(--accent)">43%</span></div>
+              <div class="fi-bar-bg"><div class="fi-bar" style="width:43%"></div></div>
+            </div>
+            <div class="fi-row">
+              <div class="fi-label"><span>Journey Month</span><span style="color:var(--accent)">29%</span></div>
+              <div class="fi-bar-bg"><div class="fi-bar" style="width:29%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SIMULATOR ============ -->
+<div class="page" id="page-simulator">
+  <div class="section">
+    <div class="section-label">// What-If Engine</div>
+    <div class="section-title">Price Simulator</div>
+
+    <div class="sim-layout">
+      <!-- CONTROLS -->
+      <div class="sim-controls">
+        <div class="form-title">⚙ Adjust Parameters</div>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <span class="slider-name">Duration</span>
+            <span class="slider-val" id="sl-dur-val">180 min</span>
+          </div>
+          <input type="range" min="30" max="900" value="180" id="sl-dur"
+            oninput="document.getElementById('sl-dur-val').textContent=this.value+' min'; updateSim()"/>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <span class="slider-name">Departure Hour</span>
+            <span class="slider-val" id="sl-hour-val">10:00</span>
+          </div>
+          <input type="range" min="0" max="23" value="10" id="sl-hour"
+            oninput="document.getElementById('sl-hour-val').textContent=String(this.value).padStart(2,'0')+':00'; updateSim()"/>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <span class="slider-name">Days to Departure</span>
+            <span class="slider-val" id="sl-days-val">30 days</span>
+          </div>
+          <input type="range" min="1" max="90" value="30" id="sl-days"
+            oninput="document.getElementById('sl-days-val').textContent=this.value+' days'; updateSim()"/>
+        </div>
+
+        <div style="margin-bottom:1rem;">
+          <div class="analytics-card-title" style="margin-bottom:0.5rem;">Stops</div>
+          <div class="sim-toggle-row">
+            <button class="toggle-btn" onclick="setStop(this,0)" >Non-stop</button>
+            <button class="toggle-btn active" onclick="setStop(this,1)">1 Stop</button>
+            <button class="toggle-btn" onclick="setStop(this,2)">2 Stops</button>
+          </div>
+        </div>
+
+        <div style="margin-bottom:1rem;">
+          <div class="analytics-card-title" style="margin-bottom:0.5rem;">Airline</div>
+          <select id="sim-airline" onchange="updateSim()" style="width:100%">
+            <option>IndiGo</option>
+            <option>Air India</option>
+            <option>Jet Airways</option>
+            <option>SpiceJet</option>
+            <option>Vistara</option>
+          </select>
+        </div>
+
+        <div class="result-price-block" style="margin-top:0.5rem;">
+          <div class="result-label">Simulated Price</div>
+          <div class="result-price" id="sim-price" style="font-size:2.5rem;">₹6,540</div>
+          <div class="result-range" id="sim-delta" style="color:var(--accent3);">Baseline</div>
+        </div>
+      </div>
+
+      <!-- COMPARISON TABLE -->
+      <div class="sim-results">
+        <div class="sim-compare">
+          <div class="form-title" style="margin-bottom:1rem;">🔀 Airline Comparison</div>
+          <div id="compare-rows"></div>
+        </div>
+
+        <div class="sim-compare">
+          <div class="form-title" style="margin-bottom:1rem;">📈 Price Sensitivity</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;">
+            <div style="text-align:center;padding:1rem;background:var(--surface2);">
+              <div style="font-size:0.65rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:0.4rem;">+1 Stop</div>
+              <div style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:var(--accent2);" id="sens-stop">−₹620</div>
+            </div>
+            <div style="text-align:center;padding:1rem;background:var(--surface2);">
+              <div style="font-size:0.65rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:0.4rem;">+60 min</div>
+              <div style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:var(--accent3);" id="sens-dur">+₹310</div>
+            </div>
+            <div style="text-align:center;padding:1rem;background:var(--surface2);">
+              <div style="font-size:0.65rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:0.4rem;">+14 days early</div>
+              <div style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:var(--accent3);" id="sens-days">−₹450</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ANALYTICS ============ -->
+<div class="page" id="page-analytics">
+  <div class="section">
+    <div class="section-label">// Exploratory Data Analysis</div>
+    <div class="section-title">Flight Analytics</div>
+
+    <!-- TOP ROW -->
+    <div class="analytics-grid">
+      <!-- Airline Chart -->
+      <div class="analytics-card">
+        <div class="analytics-card-title">Avg Price by Airline (₹)</div>
+        <div class="bar-chart" id="airline-bars"></div>
+      </div>
+
+      <!-- Stops Chart -->
+      <div class="analytics-card">
+        <div class="analytics-card-title">Price by Number of Stops</div>
+        <div class="bar-chart" id="stops-bars"></div>
+      </div>
+
+      <!-- Routes -->
+      <div class="analytics-card">
+        <div class="analytics-card-title">Top Routes by Price</div>
+        <table class="route-table">
+          <thead>
+            <tr><th>Route</th><th>Avg Price</th><th>Tag</th></tr>
+          </thead>
+          <tbody id="route-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- BOTTOM ROW -->
+    <div class="big-analytics">
+      <!-- Airline share donut -->
+      <div class="analytics-card">
+        <div class="analytics-card-title">Airline Market Share</div>
+        <div class="donut-wrap">
+          <svg class="donut-chart" width="160" height="160" viewBox="0 0 160 160">
+            <circle cx="80" cy="80" r="60" fill="none" stroke="#1a2d4a" stroke-width="24"/>
+            <!-- segments: total circumference ~376.99 -->
+            <circle cx="80" cy="80" r="60" fill="none" stroke="#00d4ff" stroke-width="24" stroke-dasharray="150 226.9" stroke-dashoffset="0"/>
+            <circle cx="80" cy="80" r="60" fill="none" stroke="#ff6b35" stroke-width="24" stroke-dasharray="90 286.9" stroke-dashoffset="-150"/>
+            <circle cx="80" cy="80" r="60" fill="none" stroke="#7fff6b" stroke-width="24" stroke-dasharray="60 316.9" stroke-dashoffset="-240"/>
+            <circle cx="80" cy="80" r="60" fill="none" stroke="#ffd700" stroke-width="24" stroke-dasharray="45 331.9" stroke-dashoffset="-300"/>
+            <circle cx="80" cy="80" r="60" fill="none" stroke="#c084fc" stroke-width="24" stroke-dasharray="31.9 345" stroke-dashoffset="-345"/>
+          </svg>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:0.5rem;justify-content:center">
+          <span style="font-size:0.65rem;color:#00d4ff">● IndiGo 40%</span>
+          <span style="font-size:0.65rem;color:#ff6b35">● Air India 24%</span>
+          <span style="font-size:0.65rem;color:#7fff6b">● Jet Airways 16%</span>
+          <span style="font-size:0.65rem;color:#ffd700">● SpiceJet 12%</span>
+          <span style="font-size:0.65rem;color:#c084fc">● Others 8%</span>
+        </div>
+      </div>
+
+      <!-- Time of day -->
+      <div class="analytics-card">
+        <div class="analytics-card-title">Price by Departure Time Slot</div>
+        <div class="time-bars" id="time-bars"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Navigation ──────────────────────────────────────────────
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.getElementById('nav-' + id).classList.add('active');
+  if (id === 'analytics') renderAnalytics();
+  if (id === 'simulator') renderSim();
+}
+
+// ── Prediction ───────────────────────────────────────────────
+const airlineMult = { IndiGo: 1.0, 'Air India': 1.12, 'Jet Airways': 1.22, SpiceJet: 0.88, Vistara: 1.18, GoAir: 0.92 };
+
+function calcPrice() {
+  const airline = document.getElementById('p-airline').value;
+  const stops   = +document.getElementById('p-stops').value;
+  const hour    = +document.getElementById('p-hour').value;
+  const dur     = +document.getElementById('p-dur').value;
+  const month   = +document.getElementById('p-month').value;
+  let base = 3500;
+  base += dur * 7;
+  base += stops * 400;
+  base -= stops * 300 * (stops > 0 ? 1 : 0);
+  if (hour >= 18 && hour <= 21) base *= 1.10;
+  if (hour >= 0  && hour <= 5)  base *= 0.92;
+  if (month >= 5 && month <= 7) base *= 1.08;
+  base *= (airlineMult[airline] || 1.0);
+  return Math.round(base / 10) * 10;
+}
+
+function runPrediction() {
+  const p = calcPrice();
+  document.getElementById('result-price').textContent = '₹' + p.toLocaleString('en-IN');
+  document.getElementById('result-range').textContent =
+    `Expected range: ₹${(p-350).toLocaleString('en-IN')} – ₹${(p+360).toLocaleString('en-IN')}`;
+}
+
+function updatePrediction() { runPrediction(); }
+
+// ── Simulator ────────────────────────────────────────────────
+let simStops = 1;
+function setStop(btn, val) {
+  document.querySelectorAll('.sim-toggle-row .toggle-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  simStops = val;
+  updateSim();
+}
+
+function updateSim() {
+  const dur     = +document.getElementById('sl-dur').value;
+  const hour    = +document.getElementById('sl-hour').value;
+  const days    = +document.getElementById('sl-days').value;
+  const airline = document.getElementById('sim-airline').value;
+
+  let base = 3500 + dur * 7 + simStops * 300;
+  if (hour >= 18 && hour <= 21) base *= 1.10;
+  if (hour >= 0  && hour <= 5)  base *= 0.92;
+  base -= (days - 7) * 15;
+  base *= (airlineMult[airline] || 1.0);
+  const p = Math.round(base / 10) * 10;
+  const baseline = 6540;
+  const diff = p - baseline;
+
+  document.getElementById('sim-price').textContent = '₹' + p.toLocaleString('en-IN');
+  const deltaEl = document.getElementById('sim-delta');
+  if (diff === 0) {
+    deltaEl.textContent = 'Baseline'; deltaEl.style.color = 'var(--muted)';
+  } else if (diff > 0) {
+    deltaEl.textContent = `▲ +₹${Math.abs(diff).toLocaleString('en-IN')} vs baseline`; deltaEl.style.color = 'var(--accent2)';
+  } else {
+    deltaEl.textContent = `▼ −₹${Math.abs(diff).toLocaleString('en-IN')} vs baseline`; deltaEl.style.color = 'var(--accent3)';
+  }
+
+  renderSim();
+}
+
+function renderSim() {
+  const dur  = +document.getElementById('sl-dur').value;
+  const hour = +document.getElementById('sl-hour').value;
+  const airlines = ['IndiGo','Air India','Jet Airways','SpiceJet','Vistara'];
+  const rows = airlines.map(a => {
+    let base = 3500 + dur * 7 + simStops * 300;
+    if (hour >= 18 && hour <= 21) base *= 1.10;
+    base *= (airlineMult[a] || 1.0);
+    return { airline: a, price: Math.round(base / 10) * 10 };
+  }).sort((a,b)=>a.price-b.price);
+
+  const min = rows[0].price, max = rows[rows.length-1].price;
+  const html = rows.map(r => {
+    let tag = '';
+    if (r.price === min) tag = `<span class="compare-delta delta-down">Cheapest</span>`;
+    if (r.price === max) tag = `<span class="compare-delta delta-up">Priciest</span>`;
+    const color = r.price === min ? 'var(--accent3)' : r.price === max ? 'var(--accent2)' : 'var(--text)';
+    return `<div class="compare-row">
+      <span class="compare-airline">${r.airline}</span>
+      ${tag}
+      <span class="compare-price" style="color:${color}">₹${r.price.toLocaleString('en-IN')}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('compare-rows').innerHTML = html;
+}
+
+// ── Analytics ────────────────────────────────────────────────
+function renderAnalytics() {
+  // Airline bars
+  const airlines = [
+    { name: 'Jet Airways', val: 8540, color: '#ff6b35' },
+    { name: 'Vistara',     val: 7820, color: '#c084fc' },
+    { name: 'Air India',   val: 7210, color: '#00d4ff' },
+    { name: 'GoAir',       val: 5180, color: '#ffd700' },
+    { name: 'IndiGo',      val: 4930, color: '#00d4ff' },
+    { name: 'SpiceJet',    val: 4200, color: '#7fff6b' },
+  ];
+  const maxA = Math.max(...airlines.map(a => a.val));
+  document.getElementById('airline-bars').innerHTML = airlines.map(a =>
+    `<div class="bar-row">
+      <div class="bar-name">${a.name}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${a.val/maxA*100}%;background:${a.color}"></div></div>
+      <div class="bar-num" style="color:${a.color}">₹${(a.val/1000).toFixed(1)}k</div>
+    </div>`
+  ).join('');
+
+  // Stops bars
+  const stops = [
+    { name: 'Non-stop', val: 9100, color: '#ff6b35' },
+    { name: '1 Stop',   val: 6540, color: '#00d4ff' },
+    { name: '2 Stops',  val: 4920, color: '#7fff6b' },
+    { name: '3 Stops',  val: 4100, color: '#ffd700' },
+  ];
+  const maxS = Math.max(...stops.map(s => s.val));
+  document.getElementById('stops-bars').innerHTML = stops.map(s =>
+    `<div class="bar-row">
+      <div class="bar-name">${s.name}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${s.val/maxS*100}%;background:${s.color}"></div></div>
+      <div class="bar-num" style="color:${s.color}">₹${(s.val/1000).toFixed(1)}k</div>
+    </div>`
+  ).join('');
+
+  // Routes
+  const routes = [
+    { route: 'DEL → COK', price: '₹8,200', tag: 'exp' },
+    { route: 'DEL → BLR', price: '₹7,450', tag: 'exp' },
+    { route: 'BOM → HYD', price: '₹3,120', tag: 'cheap' },
+    { route: 'MAA → DEL', price: '₹5,600', tag: '' },
+    { route: 'DEL → BOM', price: '₹4,230', tag: 'cheap' },
+  ];
+  document.getElementById('route-tbody').innerHTML = routes.map(r =>
+    `<tr>
+      <td>${r.route}</td>
+      <td style="font-family:'Syne',sans-serif;font-weight:700;">${r.price}</td>
+      <td>${r.tag === 'exp' ? '<span class="route-badge badge-exp">COSTLY</span>' : r.tag === 'cheap' ? '<span class="route-badge badge-cheap">CHEAP</span>' : ''}</td>
+    </tr>`
+  ).join('');
+
+  // Time bars
+  const times = [
+    { label: 'Morning', sub: '06-12', pct: 78, val: '₹6,100' },
+    { label: 'Afternoon', sub: '12-18', pct: 65, val: '₹5,430' },
+    { label: 'Evening', sub: '18-21', pct: 90, val: '₹7,210' },
+    { label: 'Night', sub: '21-06', pct: 50, val: '₹4,850' },
+  ];
+  document.getElementById('time-bars').innerHTML = times.map(t =>
+    `<div class="time-col">
+      <div class="time-pct">${t.val}</div>
+      <div class="time-bar-wrap"><div class="time-bar" style="height:${t.pct}%"></div></div>
+      <div class="time-label">${t.label}</div>
+      <div class="time-label">${t.sub}</div>
+    </div>`
+  ).join('');
+}
+
+// Init
+renderSim();
+</script>
+</body>
+</html>
