@@ -186,6 +186,26 @@ pip install -r requirements.txt
 python app.py
 ```
 
+## 🖥️ Frontend ↔ Backend Communication
+The user interface is served from `templates/index.html` via Flask. The prediction form collects flight parameters and submits them to the `/predict` endpoint:
+
+* **Normal form POST** – if JavaScript is disabled the browser does a traditional HTTP POST, the server renders the same template with `{{ prediction }}` injected by Jinja.
+* **AJAX (fetch)** – the page’s `runPrediction()` function gathers input values, converts the duration to hours/minutes and computes arrival time, then sends a `POST` request with JSON to `/predict`. The Flask route detects `request.is_json`, runs the ML model, and returns a JSON payload `{ "prediction": … }`. The script updates the DOM without reloading the page.
+
+This two‑way setup lets you develop and debug the backend model in Python while keeping the responsive frontend experience you built with vanilla JS.
+
+```python
+# example server-side logic (see app.py)
+if request.is_json:
+    return {"prediction": rounded}
+else:
+    return render_template("index.html", prediction=rounded)
+```
+
+The HTML form now includes `name` attributes that match the model’s expected feature names, and the Flask route will also compute missing fields (arrival times, split duration) when only a total duration is supplied.
+
+With the server running you can open `http://localhost:5000/` in your browser, fill in the fields, and watch the backend-driven prediction appear.
+
 ---
 
 ## 📁 Project Structure

@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>SkyIQ — Smart Flight Analytics</title>
+<title>SkyIQ â€” Smart Flight Analytics</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
   :root {
@@ -589,20 +589,8 @@
 
 <!-- TICKER -->
 <div class="ticker">
-  <div class="ticker-inner">
-    <span class="ticker-item">IndiGo DEL→BOM <span class="up">₹4,230 ▲2.1%</span></span>
-    <span class="ticker-item">Air India DEL→COK <span class="dn">₹6,890 ▼0.8%</span></span>
-    <span class="ticker-item">SpiceJet BOM→HYD <span class="up">₹3,120 ▲1.4%</span></span>
-    <span class="ticker-item">Vistara DEL→BLR <span class="up">₹7,450 ▲3.2%</span></span>
-    <span class="ticker-item">GoAir MAA→DEL <span class="dn">₹5,600 ▼1.1%</span></span>
-    <span class="ticker-item">Jet Airways DEL→COK <span class="up">₹8,200 ▲0.5%</span></span>
-    <!-- duplicate for seamless loop -->
-    <span class="ticker-item">IndiGo DEL→BOM <span class="up">₹4,230 ▲2.1%</span></span>
-    <span class="ticker-item">Air India DEL→COK <span class="dn">₹6,890 ▼0.8%</span></span>
-    <span class="ticker-item">SpiceJet BOM→HYD <span class="up">₹3,120 ▲1.4%</span></span>
-    <span class="ticker-item">Vistara DEL→BLR <span class="up">₹7,450 ▲3.2%</span></span>
-    <span class="ticker-item">GoAir MAA→DEL <span class="dn">₹5,600 ▼1.1%</span></span>
-    <span class="ticker-item">Jet Airways DEL→COK <span class="up">₹8,200 ▲0.5%</span></span>
+  <div class="ticker-inner" id="ticker-inner">
+    <span class="ticker-item">Loading live route metrics...</span>
   </div>
 </div>
 
@@ -611,16 +599,16 @@
   <div class="hero">
     <div class="hero-eyebrow"><span class="pulse-dot"></span> &nbsp; Live Flight Intelligence</div>
     <h1>Smart Flight<br><span class="line2">Analytics</span></h1>
-    <p class="hero-sub">Predict ticket prices, simulate fare changes, and uncover hidden patterns in Indian aviation data — powered by machine learning.</p>
+    <p class="hero-sub">Predict ticket prices, simulate fare changes, and uncover hidden patterns in Indian aviation data â€” powered by machine learning.</p>
     <div class="hero-ctas">
-      <button class="btn-primary" onclick="showPage('predict')">Predict Price →</button>
+      <button class="btn-primary" onclick="showPage('predict')">Predict Price â†’</button>
       <button class="btn-secondary" onclick="showPage('analytics')">View Analytics</button>
     </div>
     <div class="stats-row">
-      <div class="stat"><div class="stat-val">10,683</div><div class="stat-label">Flights Analysed</div></div>
-      <div class="stat"><div class="stat-val">6</div><div class="stat-label">Airlines</div></div>
-      <div class="stat"><div class="stat-val">93.4%</div><div class="stat-label">R² Accuracy</div></div>
-      <div class="stat"><div class="stat-val">₹480</div><div class="stat-label">Avg MAE</div></div>
+      <div class="stat"><div class="stat-val" id="stat-flights">--</div><div class="stat-label">Flights Analysed</div></div>
+      <div class="stat"><div class="stat-val" id="stat-airlines">--</div><div class="stat-label">Airlines</div></div>
+      <div class="stat"><div class="stat-val" id="stat-routes">--</div><div class="stat-label">Routes</div></div>
+      <div class="stat"><div class="stat-val" id="stat-avg-price">--</div><div class="stat-label">Avg Price</div></div>
     </div>
   </div>
 </div>
@@ -634,118 +622,109 @@
     <div class="predict-grid">
       <!-- FORM -->
       <div class="predict-form-card">
-        <div class="form-title">✈ Enter Flight Details</div>
-        <div class="form-grid">
-          <div class="form-group">
-            <label>Airline</label>
-            <select id="p-airline" onchange="updatePrediction()">
-              <option>IndiGo</option>
-              <option>Air India</option>
-              <option>Jet Airways</option>
-              <option>SpiceJet</option>
-              <option>Vistara</option>
-              <option>GoAir</option>
-            </select>
+        <div class="form-title">âœˆ Enter Flight Details</div>
+        <!-- wrap the inputs in a real HTML form so we can fall back to a normal POST if JS is disabled -->
+        <form id="predict-form" action="/predict" method="post" onsubmit="event.preventDefault(); runPrediction()">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Airline</label>
+              <select id="p-airline" name="airline" onchange="updatePrediction()">
+                <option>IndiGo</option>
+                <option>Air India</option>
+                <option>Jet Airways</option>
+                <option>SpiceJet</option>
+                <option>Vistara</option>
+                <option>GoAir</option>
+                <option>Air Asia</option>
+                <option>Multiple carriers</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Total Stops</label>
+              <select id="p-stops" name="stops" onchange="updatePrediction()">
+                <option value="0">Non-stop</option>
+                <option value="1" selected>1 Stop</option>
+                <option value="2">2 Stops</option>
+                <option value="3">3 Stops</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Source</label>
+              <select id="p-src" name="source" onchange="updatePrediction()">
+                <option>Banglore</option>
+                <option>Chennai</option>
+                <option>Delhi</option>
+                <option>Kolkata</option>
+                <option>Mumbai</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Destination</label>
+              <select id="p-dst" name="destination" onchange="updatePrediction()">
+                <option>Banglore</option>
+                <option>Cochin</option>
+                <option>Delhi</option>
+                <option>Hyderabad</option>
+                <option>Kolkata</option>
+                <option>New Delhi</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Journey Day</label>
+              <input type="number" id="p-day" name="journey_day" value="15" min="1" max="31" onchange="updatePrediction()"/>
+            </div>
+            <div class="form-group">
+              <label>Journey Month</label>
+              <select id="p-month" name="journey_month" onchange="updatePrediction()">
+                <option value="1">January</option><option value="2">February</option>
+                <option value="3">March</option><option value="4" selected>April</option>
+                <option value="5">May</option><option value="6">June</option>
+                <option value="7">July</option><option value="8">August</option>
+                <option value="9">September</option><option value="10">October</option>
+                <option value="11">November</option><option value="12">December</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Departure Hour</label>
+              <input type="number" id="p-hour" name="dep_hour" value="10" min="0" max="23" onchange="updatePrediction()"/>
+            </div>
+            <div class="form-group">
+              <label>Duration (mins)</label>
+              <input type="number" id="p-dur" name="duration" value="180" min="30" max="900" onchange="updatePrediction()"/>
+            </div>
           </div>
-          <div class="form-group">
-            <label>Total Stops</label>
-            <select id="p-stops" onchange="updatePrediction()">
-              <option value="0">Non-stop</option>
-              <option value="1" selected>1 Stop</option>
-              <option value="2">2 Stops</option>
-              <option value="3">3 Stops</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Source</label>
-            <select id="p-src" onchange="updatePrediction()">
-              <option>Delhi</option>
-              <option>Mumbai</option>
-              <option>Kolkata</option>
-              <option>Chennai</option>
-              <option>Banglore</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Destination</label>
-            <select id="p-dst" onchange="updatePrediction()">
-              <option>Cochin</option>
-              <option>Bangalore</option>
-              <option>Hyderabad</option>
-              <option>New Delhi</option>
-              <option>Kolkata</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Journey Day</label>
-            <input type="number" id="p-day" value="15" min="1" max="31" onchange="updatePrediction()"/>
-          </div>
-          <div class="form-group">
-            <label>Journey Month</label>
-            <select id="p-month" onchange="updatePrediction()">
-              <option value="1">January</option><option value="2">February</option>
-              <option value="3">March</option><option value="4" selected>April</option>
-              <option value="5">May</option><option value="6">June</option>
-              <option value="7">July</option><option value="8">August</option>
-              <option value="9">September</option><option value="10">October</option>
-              <option value="11">November</option><option value="12">December</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Departure Hour</label>
-            <input type="number" id="p-hour" value="10" min="0" max="23" onchange="updatePrediction()"/>
-          </div>
-          <div class="form-group">
-            <label>Duration (mins)</label>
-            <input type="number" id="p-dur" value="180" min="30" max="900" onchange="updatePrediction()"/>
-          </div>
-        </div>
-        <button class="predict-btn" onclick="runPrediction()">⚡ Predict Ticket Price</button>
+          <button type="submit" class="predict-btn">âš¡ Predict Ticket Price</button>
+        </form>
       </div>
 
       <!-- RESULT -->
       <div class="result-card">
-        <div class="form-title">📊 Prediction Result</div>
+        <div class="form-title">ðŸ“Š Prediction Result</div>
 
         <div class="result-price-block">
           <div class="result-label">Estimated Price</div>
-          <div class="result-price" id="result-price">₹6,540</div>
-          <div class="result-range" id="result-range">Expected range: ₹6,200 – ₹6,900</div>
+          <div class="result-price" id="result-price">â‚¹{% if prediction %}{{ prediction }}{% else %}--{% endif %}</div>
+          <div class="result-range" id="result-range">
+            {% if prediction %}
+              Expected range: â‚¹{{ prediction-350 }} â€“ â‚¹{{ prediction+360 }}
+            {% else %}
+              Expected range: --
+            {% endif %}
+          </div>
         </div>
 
         <div>
           <div class="analytics-card-title" style="margin-bottom:0.75rem;">Key Insights</div>
           <div class="insights-list">
-            <div class="insight-item"><div class="insight-dot"></div>Non-stop flights on this route cost ~15% more on average.</div>
-            <div class="insight-item"><div class="insight-dot"></div>Evening departures (18:00–21:00) are typically 10% pricier.</div>
-            <div class="insight-item"><div class="insight-dot"></div>Booking 30+ days ahead can save up to ₹1,200.</div>
+            <div class="insight-item"><div class="insight-dot"></div>Prediction is generated from the trained model on current input values.</div>
+            <div class="insight-item"><div class="insight-dot"></div>Use the simulator to test stop count, duration, and departure-time impact.</div>
+            <div class="insight-item"><div class="insight-dot"></div>Analytics panels below are loaded from backend dataset aggregates.</div>
           </div>
         </div>
 
         <div>
           <div class="analytics-card-title" style="margin-bottom:0.75rem;">Feature Importance</div>
-          <div class="feature-importance" id="fi-bars">
-            <div class="fi-row">
-              <div class="fi-label"><span>Duration</span><span style="color:var(--accent)">87%</span></div>
-              <div class="fi-bar-bg"><div class="fi-bar" style="width:87%"></div></div>
-            </div>
-            <div class="fi-row">
-              <div class="fi-label"><span>Airline</span><span style="color:var(--accent)">74%</span></div>
-              <div class="fi-bar-bg"><div class="fi-bar" style="width:74%"></div></div>
-            </div>
-            <div class="fi-row">
-              <div class="fi-label"><span>Total Stops</span><span style="color:var(--accent)">61%</span></div>
-              <div class="fi-bar-bg"><div class="fi-bar" style="width:61%"></div></div>
-            </div>
-            <div class="fi-row">
-              <div class="fi-label"><span>Departure Hour</span><span style="color:var(--accent)">43%</span></div>
-              <div class="fi-bar-bg"><div class="fi-bar" style="width:43%"></div></div>
-            </div>
-            <div class="fi-row">
-              <div class="fi-label"><span>Journey Month</span><span style="color:var(--accent)">29%</span></div>
-              <div class="fi-bar-bg"><div class="fi-bar" style="width:29%"></div></div>
-            </div>
-          </div>
+          <div class="feature-importance" id="fi-bars"></div>
         </div>
       </div>
     </div>
@@ -761,7 +740,7 @@
     <div class="sim-layout">
       <!-- CONTROLS -->
       <div class="sim-controls">
-        <div class="form-title">⚙ Adjust Parameters</div>
+        <div class="form-title">âš™ Adjust Parameters</div>
 
         <div class="slider-group">
           <div class="slider-header">
@@ -812,32 +791,32 @@
 
         <div class="result-price-block" style="margin-top:0.5rem;">
           <div class="result-label">Simulated Price</div>
-          <div class="result-price" id="sim-price" style="font-size:2.5rem;">₹6,540</div>
-          <div class="result-range" id="sim-delta" style="color:var(--accent3);">Baseline</div>
+          <div class="result-price" id="sim-price" style="font-size:2.5rem;">--</div>
+          <div class="result-range" id="sim-delta" style="color:var(--muted);">Waiting for simulation...</div>
         </div>
       </div>
 
       <!-- COMPARISON TABLE -->
       <div class="sim-results">
         <div class="sim-compare">
-          <div class="form-title" style="margin-bottom:1rem;">🔀 Airline Comparison</div>
+          <div class="form-title" style="margin-bottom:1rem;">ðŸ”€ Airline Comparison</div>
           <div id="compare-rows"></div>
         </div>
 
         <div class="sim-compare">
-          <div class="form-title" style="margin-bottom:1rem;">📈 Price Sensitivity</div>
+          <div class="form-title" style="margin-bottom:1rem;">ðŸ“ˆ Price Sensitivity</div>
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;">
             <div style="text-align:center;padding:1rem;background:var(--surface2);">
               <div style="font-size:0.65rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:0.4rem;">+1 Stop</div>
-              <div style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:var(--accent2);" id="sens-stop">−₹620</div>
+              <div style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:var(--accent2);" id="sens-stop">--</div>
             </div>
             <div style="text-align:center;padding:1rem;background:var(--surface2);">
               <div style="font-size:0.65rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:0.4rem;">+60 min</div>
-              <div style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:var(--accent3);" id="sens-dur">+₹310</div>
+              <div style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:var(--accent3);" id="sens-dur">--</div>
             </div>
             <div style="text-align:center;padding:1rem;background:var(--surface2);">
               <div style="font-size:0.65rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:0.4rem;">+14 days early</div>
-              <div style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:var(--accent3);" id="sens-days">−₹450</div>
+              <div style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:var(--accent3);" id="sens-days">--</div>
             </div>
           </div>
         </div>
@@ -856,7 +835,7 @@
     <div class="analytics-grid">
       <!-- Airline Chart -->
       <div class="analytics-card">
-        <div class="analytics-card-title">Avg Price by Airline (₹)</div>
+        <div class="analytics-card-title">Avg Price by Airline (â‚¹)</div>
         <div class="bar-chart" id="airline-bars"></div>
       </div>
 
@@ -884,22 +863,9 @@
       <div class="analytics-card">
         <div class="analytics-card-title">Airline Market Share</div>
         <div class="donut-wrap">
-          <svg class="donut-chart" width="160" height="160" viewBox="0 0 160 160">
-            <circle cx="80" cy="80" r="60" fill="none" stroke="#1a2d4a" stroke-width="24"/>
-            <!-- segments: total circumference ~376.99 -->
-            <circle cx="80" cy="80" r="60" fill="none" stroke="#00d4ff" stroke-width="24" stroke-dasharray="150 226.9" stroke-dashoffset="0"/>
-            <circle cx="80" cy="80" r="60" fill="none" stroke="#ff6b35" stroke-width="24" stroke-dasharray="90 286.9" stroke-dashoffset="-150"/>
-            <circle cx="80" cy="80" r="60" fill="none" stroke="#7fff6b" stroke-width="24" stroke-dasharray="60 316.9" stroke-dashoffset="-240"/>
-            <circle cx="80" cy="80" r="60" fill="none" stroke="#ffd700" stroke-width="24" stroke-dasharray="45 331.9" stroke-dashoffset="-300"/>
-            <circle cx="80" cy="80" r="60" fill="none" stroke="#c084fc" stroke-width="24" stroke-dasharray="31.9 345" stroke-dashoffset="-345"/>
-          </svg>
+          <svg class="donut-chart" id="market-donut" width="160" height="160" viewBox="0 0 160 160"></svg>
         </div>
-        <div style="display:flex;flex-wrap:wrap;gap:0.5rem;justify-content:center">
-          <span style="font-size:0.65rem;color:#00d4ff">● IndiGo 40%</span>
-          <span style="font-size:0.65rem;color:#ff6b35">● Air India 24%</span>
-          <span style="font-size:0.65rem;color:#7fff6b">● Jet Airways 16%</span>
-          <span style="font-size:0.65rem;color:#ffd700">● SpiceJet 12%</span>
-          <span style="font-size:0.65rem;color:#c084fc">● Others 8%</span>
+        <div id="market-legend" style="display:flex;flex-wrap:wrap;gap:0.5rem;justify-content:center">
         </div>
       </div>
 
@@ -913,179 +879,380 @@
 </div>
 
 <script>
-// ── Navigation ──────────────────────────────────────────────
-function showPage(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
-  document.getElementById('page-' + id).classList.add('active');
-  document.getElementById('nav-' + id).classList.add('active');
-  if (id === 'analytics') renderAnalytics();
-  if (id === 'simulator') renderSim();
-}
-
-// ── Prediction ───────────────────────────────────────────────
-const airlineMult = { IndiGo: 1.0, 'Air India': 1.12, 'Jet Airways': 1.22, SpiceJet: 0.88, Vistara: 1.18, GoAir: 0.92 };
-
-function calcPrice() {
-  const airline = document.getElementById('p-airline').value;
-  const stops   = +document.getElementById('p-stops').value;
-  const hour    = +document.getElementById('p-hour').value;
-  const dur     = +document.getElementById('p-dur').value;
-  const month   = +document.getElementById('p-month').value;
-  let base = 3500;
-  base += dur * 7;
-  base += stops * 400;
-  base -= stops * 300 * (stops > 0 ? 1 : 0);
-  if (hour >= 18 && hour <= 21) base *= 1.10;
-  if (hour >= 0  && hour <= 5)  base *= 0.92;
-  if (month >= 5 && month <= 7) base *= 1.08;
-  base *= (airlineMult[airline] || 1.0);
-  return Math.round(base / 10) * 10;
-}
-
-function runPrediction() {
-  const p = calcPrice();
-  document.getElementById('result-price').textContent = '₹' + p.toLocaleString('en-IN');
-  document.getElementById('result-range').textContent =
-    `Expected range: ₹${(p-350).toLocaleString('en-IN')} – ₹${(p+360).toLocaleString('en-IN')}`;
-}
-
-function updatePrediction() { runPrediction(); }
-
-// ── Simulator ────────────────────────────────────────────────
+const palette = ['#00d4ff', '#ff6b35', '#7fff6b', '#ffd700', '#c084fc', '#60a5fa'];
+let analyticsCache = null;
 let simStops = 1;
+
+function formatInr(value) {
+  return `₹${Math.round(Number(value || 0)).toLocaleString('en-IN')}`;
+}
+
+function stopLabel(stop) {
+  if (stop === 0) return 'Non-stop';
+  if (stop === 1) return '1 Stop';
+  return `${stop} Stops`;
+}
+
+function formatDelta(value) {
+  const absVal = Math.abs(Number(value || 0));
+  const sign = value >= 0 ? '+' : '−';
+  return `${sign}${formatInr(absVal)}`;
+}
+
+async function fetchJson(url, options) {
+  const resp = await fetch(url, options);
+  if (!resp.ok) {
+    throw new Error(`Request failed: ${resp.status}`);
+  }
+  return resp.json();
+}
+
+function replaceSelectOptions(selectId, values, selectedValue) {
+  const select = document.getElementById(selectId);
+  if (!select) return;
+  const selected = String(selectedValue ?? '');
+  const options = values.map(v => String(v));
+  select.innerHTML = '';
+  options.forEach((value) => {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = value;
+    option.selected = value === selected;
+    select.appendChild(option);
+  });
+  if (!options.includes(selected) && options.length > 0) {
+    select.value = options[0];
+  }
+}
+
+async function loadOptions() {
+  const data = await fetchJson('/api/options');
+
+  replaceSelectOptions('p-airline', data.airlines || [], document.getElementById('p-airline').value);
+  replaceSelectOptions('sim-airline', data.airlines || [], document.getElementById('sim-airline').value);
+  replaceSelectOptions('p-src', data.sources || [], document.getElementById('p-src').value);
+  replaceSelectOptions('p-dst', data.destinations || [], document.getElementById('p-dst').value);
+
+  const stopsSelect = document.getElementById('p-stops');
+  const selectedStop = String(stopsSelect.value || '1');
+  stopsSelect.innerHTML = '';
+  (data.stops || []).forEach((stop) => {
+    const value = String(stop);
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = stopLabel(Number(stop));
+    option.selected = value === selectedStop;
+    stopsSelect.appendChild(option);
+  });
+  if (![...(data.stops || [])].map(String).includes(selectedStop) && (data.stops || []).length > 0) {
+    stopsSelect.value = String(data.stops[0]);
+  }
+}
+
+function buildPredictionPayload() {
+  const airline = document.getElementById('p-airline').value;
+  const source = document.getElementById('p-src').value;
+  const destination = document.getElementById('p-dst').value;
+  const stops = parseInt(document.getElementById('p-stops').value, 10);
+  const journey_day = parseInt(document.getElementById('p-day').value, 10);
+  const journey_month = parseInt(document.getElementById('p-month').value, 10);
+  const dep_hour = parseInt(document.getElementById('p-hour').value, 10);
+
+  const totalDur = parseInt(document.getElementById('p-dur').value, 10);
+  const duration_hour = Math.floor(totalDur / 60);
+  const duration_min = totalDur % 60;
+  const dep_min = 0;
+  const arrival_hour = (dep_hour + duration_hour + Math.floor((dep_min + duration_min) / 60)) % 24;
+  const arrival_min = (dep_min + duration_min) % 60;
+
+  return {
+    airline,
+    source,
+    destination,
+    stops,
+    journey_day,
+    journey_month,
+    dep_hour,
+    dep_min,
+    arrival_hour,
+    arrival_min,
+    duration_hour,
+    duration_min,
+  };
+}
+
+async function runPrediction() {
+  const payload = buildPredictionPayload();
+  try {
+    const data = await fetchJson('/predict', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const p = Math.round(data.prediction);
+    document.getElementById('result-price').textContent = formatInr(p);
+    document.getElementById('result-range').textContent =
+      `Expected range: ${formatInr(p - 350)} – ${formatInr(p + 360)}`;
+  } catch (error) {
+    console.error('Prediction request failed', error);
+    document.getElementById('result-price').textContent = 'Unavailable';
+    document.getElementById('result-range').textContent = 'Prediction service error.';
+  }
+}
+
+function updatePrediction() {
+  runPrediction();
+  updateSim();
+}
+
 function setStop(btn, val) {
-  document.querySelectorAll('.sim-toggle-row .toggle-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.sim-toggle-row .toggle-btn').forEach((b) => b.classList.remove('active'));
   btn.classList.add('active');
   simStops = val;
   updateSim();
 }
 
-function updateSim() {
-  const dur     = +document.getElementById('sl-dur').value;
-  const hour    = +document.getElementById('sl-hour').value;
-  const days    = +document.getElementById('sl-days').value;
-  const airline = document.getElementById('sim-airline').value;
-
-  let base = 3500 + dur * 7 + simStops * 300;
-  if (hour >= 18 && hour <= 21) base *= 1.10;
-  if (hour >= 0  && hour <= 5)  base *= 0.92;
-  base -= (days - 7) * 15;
-  base *= (airlineMult[airline] || 1.0);
-  const p = Math.round(base / 10) * 10;
-  const baseline = 6540;
-  const diff = p - baseline;
-
-  document.getElementById('sim-price').textContent = '₹' + p.toLocaleString('en-IN');
-  const deltaEl = document.getElementById('sim-delta');
-  if (diff === 0) {
-    deltaEl.textContent = 'Baseline'; deltaEl.style.color = 'var(--muted)';
-  } else if (diff > 0) {
-    deltaEl.textContent = `▲ +₹${Math.abs(diff).toLocaleString('en-IN')} vs baseline`; deltaEl.style.color = 'var(--accent2)';
-  } else {
-    deltaEl.textContent = `▼ −₹${Math.abs(diff).toLocaleString('en-IN')} vs baseline`; deltaEl.style.color = 'var(--accent3)';
+function renderSimComparison(rows) {
+  if (!rows || rows.length === 0) {
+    document.getElementById('compare-rows').innerHTML = '<div class="compare-row">No data</div>';
+    return;
   }
-
-  renderSim();
-}
-
-function renderSim() {
-  const dur  = +document.getElementById('sl-dur').value;
-  const hour = +document.getElementById('sl-hour').value;
-  const airlines = ['IndiGo','Air India','Jet Airways','SpiceJet','Vistara'];
-  const rows = airlines.map(a => {
-    let base = 3500 + dur * 7 + simStops * 300;
-    if (hour >= 18 && hour <= 21) base *= 1.10;
-    base *= (airlineMult[a] || 1.0);
-    return { airline: a, price: Math.round(base / 10) * 10 };
-  }).sort((a,b)=>a.price-b.price);
-
-  const min = rows[0].price, max = rows[rows.length-1].price;
-  const html = rows.map(r => {
-    let tag = '';
-    if (r.price === min) tag = `<span class="compare-delta delta-down">Cheapest</span>`;
-    if (r.price === max) tag = `<span class="compare-delta delta-up">Priciest</span>`;
-    const color = r.price === min ? 'var(--accent3)' : r.price === max ? 'var(--accent2)' : 'var(--text)';
+  const min = rows[0].price;
+  const max = rows[rows.length - 1].price;
+  document.getElementById('compare-rows').innerHTML = rows.map((row) => {
+    let badge = '';
+    if (row.price === min) badge = '<span class="compare-delta delta-down">Cheapest</span>';
+    if (row.price === max) badge = '<span class="compare-delta delta-up">Priciest</span>';
+    const color = row.price === min ? 'var(--accent3)' : row.price === max ? 'var(--accent2)' : 'var(--text)';
     return `<div class="compare-row">
-      <span class="compare-airline">${r.airline}</span>
-      ${tag}
-      <span class="compare-price" style="color:${color}">₹${r.price.toLocaleString('en-IN')}</span>
+      <span class="compare-airline">${row.airline}</span>
+      ${badge}
+      <span class="compare-price" style="color:${color}">${formatInr(row.price)}</span>
     </div>`;
   }).join('');
-  document.getElementById('compare-rows').innerHTML = html;
 }
 
-// ── Analytics ────────────────────────────────────────────────
-function renderAnalytics() {
-  // Airline bars
-  const airlines = [
-    { name: 'Jet Airways', val: 8540, color: '#ff6b35' },
-    { name: 'Vistara',     val: 7820, color: '#c084fc' },
-    { name: 'Air India',   val: 7210, color: '#00d4ff' },
-    { name: 'GoAir',       val: 5180, color: '#ffd700' },
-    { name: 'IndiGo',      val: 4930, color: '#00d4ff' },
-    { name: 'SpiceJet',    val: 4200, color: '#7fff6b' },
-  ];
-  const maxA = Math.max(...airlines.map(a => a.val));
-  document.getElementById('airline-bars').innerHTML = airlines.map(a =>
-    `<div class="bar-row">
-      <div class="bar-name">${a.name}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${a.val/maxA*100}%;background:${a.color}"></div></div>
-      <div class="bar-num" style="color:${a.color}">₹${(a.val/1000).toFixed(1)}k</div>
-    </div>`
-  ).join('');
+function renderSensitivityValue(elementId, delta) {
+  const el = document.getElementById(elementId);
+  el.textContent = formatDelta(delta);
+  if (delta > 0) {
+    el.style.color = 'var(--accent2)';
+  } else if (delta < 0) {
+    el.style.color = 'var(--accent3)';
+  } else {
+    el.style.color = 'var(--muted)';
+  }
+}
 
-  // Stops bars
-  const stops = [
-    { name: 'Non-stop', val: 9100, color: '#ff6b35' },
-    { name: '1 Stop',   val: 6540, color: '#00d4ff' },
-    { name: '2 Stops',  val: 4920, color: '#7fff6b' },
-    { name: '3 Stops',  val: 4100, color: '#ffd700' },
-  ];
-  const maxS = Math.max(...stops.map(s => s.val));
-  document.getElementById('stops-bars').innerHTML = stops.map(s =>
-    `<div class="bar-row">
-      <div class="bar-name">${s.name}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${s.val/maxS*100}%;background:${s.color}"></div></div>
-      <div class="bar-num" style="color:${s.color}">₹${(s.val/1000).toFixed(1)}k</div>
-    </div>`
-  ).join('');
+async function updateSim() {
+  const payload = {
+    airline: document.getElementById('sim-airline').value,
+    source: document.getElementById('p-src').value,
+    destination: document.getElementById('p-dst').value,
+    stops: simStops,
+    dep_hour: Number(document.getElementById('sl-hour').value),
+    duration: Number(document.getElementById('sl-dur').value),
+    days_to_departure: Number(document.getElementById('sl-days').value),
+  };
 
-  // Routes
-  const routes = [
-    { route: 'DEL → COK', price: '₹8,200', tag: 'exp' },
-    { route: 'DEL → BLR', price: '₹7,450', tag: 'exp' },
-    { route: 'BOM → HYD', price: '₹3,120', tag: 'cheap' },
-    { route: 'MAA → DEL', price: '₹5,600', tag: '' },
-    { route: 'DEL → BOM', price: '₹4,230', tag: 'cheap' },
-  ];
-  document.getElementById('route-tbody').innerHTML = routes.map(r =>
-    `<tr>
+  try {
+    const data = await fetchJson('/api/simulate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const baseline = Math.round(data.baseline);
+    document.getElementById('sim-price').textContent = formatInr(baseline);
+    document.getElementById('sim-delta').textContent =
+      `Journey date context: ${String(data.journey_day).padStart(2, '0')}/${String(data.journey_month).padStart(2, '0')}`;
+    document.getElementById('sim-delta').style.color = 'var(--muted)';
+
+    renderSimComparison(data.comparison || []);
+    renderSensitivityValue('sens-stop', data.sensitivity?.plus_stop ?? 0);
+    renderSensitivityValue('sens-dur', data.sensitivity?.plus_60_min ?? 0);
+    renderSensitivityValue('sens-days', data.sensitivity?.plus_14_days_early ?? 0);
+  } catch (error) {
+    console.error('Simulation request failed', error);
+    document.getElementById('sim-price').textContent = 'Unavailable';
+    document.getElementById('sim-delta').textContent = 'Simulation service error.';
+    document.getElementById('sim-delta').style.color = 'var(--accent2)';
+  }
+}
+
+function renderTicker(items) {
+  const tickerEl = document.getElementById('ticker-inner');
+  if (!items || items.length === 0) {
+    tickerEl.innerHTML = '<span class="ticker-item">Ticker data unavailable.</span>';
+    return;
+  }
+  const doubled = [...items, ...items];
+  tickerEl.innerHTML = doubled.map((item) => {
+    const cls = item.direction === 'up' ? 'up' : 'dn';
+    const arrow = item.direction === 'up' ? '▲' : '▼';
+    return `<span class="ticker-item">${item.label} <span class="${cls}">${formatInr(item.price)} ${arrow}${item.change_pct}%</span></span>`;
+  }).join('');
+}
+
+function renderBarChart(containerId, rows) {
+  const container = document.getElementById(containerId);
+  if (!rows || rows.length === 0) {
+    container.innerHTML = '<div class="bar-row"><div class="bar-name">No data</div></div>';
+    return;
+  }
+  const maxVal = Math.max(...rows.map((r) => Number(r.val || 0)), 1);
+  container.innerHTML = rows.map((row, idx) => {
+    const color = palette[idx % palette.length];
+    return `<div class="bar-row">
+      <div class="bar-name">${row.name}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(Number(row.val) / maxVal) * 100}%;background:${color}"></div></div>
+      <div class="bar-num" style="color:${color}">${formatInr(row.val)}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderRoutes(routes) {
+  const tbody = document.getElementById('route-tbody');
+  if (!routes || routes.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="3">No route analytics available.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = routes.map((r) => {
+    const badge = r.tag === 'exp'
+      ? '<span class="route-badge badge-exp">COSTLY</span>'
+      : r.tag === 'cheap'
+        ? '<span class="route-badge badge-cheap">CHEAP</span>'
+        : '';
+    return `<tr>
       <td>${r.route}</td>
-      <td style="font-family:'Syne',sans-serif;font-weight:700;">${r.price}</td>
-      <td>${r.tag === 'exp' ? '<span class="route-badge badge-exp">COSTLY</span>' : r.tag === 'cheap' ? '<span class="route-badge badge-cheap">CHEAP</span>' : ''}</td>
-    </tr>`
-  ).join('');
-
-  // Time bars
-  const times = [
-    { label: 'Morning', sub: '06-12', pct: 78, val: '₹6,100' },
-    { label: 'Afternoon', sub: '12-18', pct: 65, val: '₹5,430' },
-    { label: 'Evening', sub: '18-21', pct: 90, val: '₹7,210' },
-    { label: 'Night', sub: '21-06', pct: 50, val: '₹4,850' },
-  ];
-  document.getElementById('time-bars').innerHTML = times.map(t =>
-    `<div class="time-col">
-      <div class="time-pct">${t.val}</div>
-      <div class="time-bar-wrap"><div class="time-bar" style="height:${t.pct}%"></div></div>
-      <div class="time-label">${t.label}</div>
-      <div class="time-label">${t.sub}</div>
-    </div>`
-  ).join('');
+      <td style="font-family:'Syne',sans-serif;font-weight:700;">${formatInr(r.price)}</td>
+      <td>${badge}</td>
+    </tr>`;
+  }).join('');
 }
 
-// Init
-renderSim();
+function renderTimeSlots(timeSlots) {
+  const container = document.getElementById('time-bars');
+  if (!timeSlots || timeSlots.length === 0) {
+    container.innerHTML = '<div class="time-col">No data</div>';
+    return;
+  }
+  container.innerHTML = timeSlots.map((slot) => `
+    <div class="time-col">
+      <div class="time-pct">${formatInr(slot.val)}</div>
+      <div class="time-bar-wrap"><div class="time-bar" style="height:${slot.pct}%"></div></div>
+      <div class="time-label">${slot.label}</div>
+      <div class="time-label">${slot.sub}</div>
+    </div>
+  `).join('');
+}
+
+function renderMarketShare(items) {
+  const svg = document.getElementById('market-donut');
+  const legend = document.getElementById('market-legend');
+  svg.innerHTML = '';
+  legend.innerHTML = '';
+
+  const radius = 60;
+  const circumference = 2 * Math.PI * radius;
+  const bg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  bg.setAttribute('cx', '80');
+  bg.setAttribute('cy', '80');
+  bg.setAttribute('r', String(radius));
+  bg.setAttribute('fill', 'none');
+  bg.setAttribute('stroke', '#1a2d4a');
+  bg.setAttribute('stroke-width', '24');
+  svg.appendChild(bg);
+
+  let offset = 0;
+  (items || []).forEach((item, idx) => {
+    const color = palette[idx % palette.length];
+    const segment = (Number(item.share || 0) / 100) * circumference;
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('cx', '80');
+    circle.setAttribute('cy', '80');
+    circle.setAttribute('r', String(radius));
+    circle.setAttribute('fill', 'none');
+    circle.setAttribute('stroke', color);
+    circle.setAttribute('stroke-width', '24');
+    circle.setAttribute('stroke-dasharray', `${segment} ${circumference - segment}`);
+    circle.setAttribute('stroke-dashoffset', String(-offset));
+    svg.appendChild(circle);
+    offset += segment;
+
+    const legendItem = document.createElement('span');
+    legendItem.style.fontSize = '0.65rem';
+    legendItem.style.color = color;
+    legendItem.textContent = `● ${item.name} ${Number(item.share).toFixed(1)}%`;
+    legend.appendChild(legendItem);
+  });
+}
+
+function renderFeatureImportance(items) {
+  const container = document.getElementById('fi-bars');
+  if (!items || items.length === 0) {
+    container.innerHTML = '<div class="fi-row"><div class="fi-label"><span>No feature-importance data available</span></div></div>';
+    return;
+  }
+  container.innerHTML = items.map((item) => `
+    <div class="fi-row">
+      <div class="fi-label"><span>${item.name}</span><span style="color:var(--accent)">${item.pct}%</span></div>
+      <div class="fi-bar-bg"><div class="fi-bar" style="width:${item.pct}%"></div></div>
+    </div>
+  `).join('');
+}
+
+function renderSummary(summary) {
+  if (!summary) return;
+  document.getElementById('stat-flights').textContent = Number(summary.flights_analyzed || 0).toLocaleString('en-IN');
+  document.getElementById('stat-airlines').textContent = Number(summary.airlines || 0).toLocaleString('en-IN');
+  document.getElementById('stat-routes').textContent = Number(summary.routes || 0).toLocaleString('en-IN');
+  document.getElementById('stat-avg-price').textContent = formatInr(summary.avg_price || 0);
+}
+
+function renderAnalytics(data) {
+  renderSummary(data.summary);
+  renderTicker(data.ticker);
+  renderBarChart('airline-bars', data.airline_avg);
+  renderBarChart('stops-bars', data.stops_avg);
+  renderRoutes(data.routes);
+  renderTimeSlots(data.time_slots);
+  renderMarketShare(data.market_share);
+  renderFeatureImportance(data.feature_importance);
+}
+
+async function loadAnalytics() {
+  const data = await fetchJson('/api/analytics');
+  analyticsCache = data;
+  renderAnalytics(data);
+}
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach((p) => p.classList.remove('active'));
+  document.querySelectorAll('.nav-links a').forEach((a) => a.classList.remove('active'));
+  document.getElementById(`page-${id}`).classList.add('active');
+  document.getElementById(`nav-${id}`).classList.add('active');
+  if (id === 'analytics' && analyticsCache) {
+    renderAnalytics(analyticsCache);
+  }
+  if (id === 'simulator') {
+    updateSim();
+  }
+}
+
+async function initApp() {
+  try {
+    await loadOptions();
+    await loadAnalytics();
+    await runPrediction();
+    await updateSim();
+  } catch (error) {
+    console.error('Initialization error', error);
+  }
+}
+
+initApp();
 </script>
 </body>
 </html>
+
+
