@@ -1,0 +1,111 @@
+<!-- ============ SIMULATOR ============ -->
+<div class="page" id="page-simulator">
+    <div class="section">
+        <div class="section-label">// What-If Engine</div>
+        <div class="section-title">Price Simulator</div>
+
+        <div class="sim-layout">
+            <!-- CONTROLS -->
+            <div class="sim-controls">
+                <div class="form-title">⚙ Adjust Parameters</div>
+
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span class="slider-name">Duration</span>
+                        <span class="slider-val" id="sl-dur-val">180 min</span>
+                    </div>
+                    <input type="range" min="30" max="900" value="180" id="sl-dur"
+                        oninput="document.getElementById('sl-dur-val').textContent=this.value+' min'; updateSim()" />
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span class="slider-name">Departure Hour</span>
+                        <span class="slider-val" id="sl-hour-val">10:00</span>
+                    </div>
+                    <input type="range" min="0" max="23" value="10" id="sl-hour"
+                        oninput="document.getElementById('sl-hour-val').textContent=String(this.value).padStart(2,'0')+':00'; updateSim()" />
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span class="slider-name">Days to Departure</span>
+                        <span class="slider-val" id="sl-days-val">30 days</span>
+                    </div>
+                    <input type="range" min="1" max="90" value="30" id="sl-days"
+                        oninput="document.getElementById('sl-days-val').textContent=this.value+' days'; updateSim()" />
+                </div>
+
+                <div style="margin-bottom:1rem;">
+                    <div class="analytics-card-title" style="margin-bottom:0.5rem;">Stops</div>
+                    <div class="sim-toggle-row">
+                        <button class="toggle-btn" onclick="setStop(this,0)">Non-stop</button>
+                        <button class="toggle-btn active" onclick="setStop(this,1)">1 Stop</button>
+                        <button class="toggle-btn" onclick="setStop(this,2)">2 Stops</button>
+                        <button class="toggle-btn" onclick="setStop(this,3)">3 Stops</button>
+                        <button class="toggle-btn" onclick="setStop(this,4)">4 Stops</button>
+                    </div>
+                </div>
+
+                <div style="margin-bottom:1rem;">
+                    <div class="analytics-card-title" style="margin-bottom:0.5rem;">Airline</div>
+                    <select id="sim-airline" onchange="updateSim()" style="width:100%">
+                        <option>IndiGo</option>
+                        <option>Air India</option>
+                        <option>Jet Airways</option>
+                        <option>SpiceJet</option>
+                        <option>Multiple carriers</option>
+                        <option>GoAir</option>
+                        <option>Vistara</option>
+                        <option>Air Asia</option>
+                        <option>Vistara Premium economy</option>
+                        <option>Jet Airways Business</option>
+                        <option>Multiple carriers Premium economy</option>
+                        <option>Trujet</option>
+                    </select>
+                </div>
+
+                <div class="result-price-block" style="margin-top:0.5rem;">
+                    <div class="result-label">Simulated Price</div>
+                    <div class="result-price" id="sim-price" style="font-size:2.5rem;">--</div>
+                    <div class="result-range" id="sim-delta" style="color:var(--muted);">Waiting for simulation...</div>
+                </div>
+            </div>
+
+            <!-- COMPARISON TABLE -->
+            <div class="sim-results">
+                <div class="sim-compare">
+                    <div class="form-title" style="margin-bottom:1rem;">🔀 Airline Comparison</div>
+                    <div id="compare-rows"></div>
+                </div>
+
+                <div class="sim-compare">
+                    <div class="form-title" style="margin-bottom:1rem;">📈 Price Sensitivity</div>
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;">
+                        <div style="text-align:center;padding:1rem;background:var(--surface2);">
+                            <div
+                                style="font-size:0.65rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:0.4rem;">
+                                +1 Stop</div>
+                            <div style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:var(--accent2);"
+                                id="sens-stop">--</div>
+                        </div>
+                        <div style="text-align:center;padding:1rem;background:var(--surface2);">
+                            <div
+                                style="font-size:0.65rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:0.4rem;">
+                                +60 min</div>
+                            <div style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:var(--accent3);"
+                                id="sens-dur">--</div>
+                        </div>
+                        <div style="text-align:center;padding:1rem;background:var(--surface2);">
+                            <div
+                                style="font-size:0.65rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:0.4rem;">
+                                +14 days early</div>
+                            <div style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:var(--accent3);"
+                                id="sens-days">--</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,8 +1,5 @@
-numpy==1.26.4
-pandas==2.2.2
-matplotlib==3.8.4
-seaborn==0.13.2
-scikit-learn==1.4.2
-flask==3.0.3
-joblib==1.4.2
-jupyter==1.0.0
+Flask==3.1.0
+pandas==2.2.3
+scikit-learn==1.6.1
+gunicorn==23.0.0
+waitress==3.0.1

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SkyIQ — Smart Flight Analytics</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+    <!-- NAV -->
+    <nav>
+        <div class="logo">Sky<span>IQ</span></div>
+        <div class="nav-links">
+            <a onclick="showPage('home')" class="active" id="nav-home">Home</a>
+            <a onclick="showPage('predict')" id="nav-predict">Predict</a>
+            <a onclick="showPage('simulator')" id="nav-simulator">Simulator</a>
+            <a onclick="showPage('analytics')" id="nav-analytics">Analytics</a>
+        </div>
+        <div class="nav-badge">BETA</div>
+    </nav>
+
+    <!-- TICKER -->
+    <div class="ticker">
+        <div class="ticker-inner" id="ticker-inner">
+            <span class="ticker-item">Loading live route metrics...</span>
+        </div>
+    </div>
+
+    <!-- PAGE CONTENT INJECTED HERE -->
+    {% block content %}{% endblock %}
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+
+</html>

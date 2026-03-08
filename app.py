@@ -1,6 +1,6 @@
 ﻿from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -11,6 +11,7 @@ from src import predict as predictor
 
 app = Flask(__name__)
 
+# Load the historical dataset into memory for building aggregate analytics
 DATA_PATH = Path("dataset/flight_price.csv")
 _df = pd.read_csv(DATA_PATH)
 
@@ -39,9 +40,14 @@ def parse_dep_hour(dep_time: Any) -> int:
 _df["Stops_Int"] = _df["Total_Stops"].map(parse_stop_value)
 _df["Dep_Hour"] = _df["Dep_Time"].map(parse_dep_hour)
 
+# Define logical defaults for the Simulator comparison endpoint
 DEFAULT_SOURCE = "Delhi"
 DEFAULT_DESTINATION = "Cochin"
+
+# Extract the top 5 most frequent airlines from the dataset to use as simulator baseline comparisons
 SIMULATION_AIRLINES = _df["Airline"].value_counts().head(5).index.tolist()
+
+# Find the absolute maximum number of stops appearing in this dataset
 MAX_STOPS = int(_df["Stops_Int"].max())
 
 def get_options() -> dict[str, list[Any]]:
@@ -106,7 +112,7 @@ def build_feature_importance() -> list[dict[str, Any]]:
         {"name": name, "pct": round((val / total) * 100, 1)}
         for name, val in sorted(grouped.items(), key=lambda x: x[1], reverse=True)
     ]
-    return result[:5]
+    return result[:10]
 
 
 def build_analytics() -> dict[str, Any]:
@@ -290,16 +296,22 @@ def model_predict(payload: dict[str, int | str]) -> float:
 
 @app.route("/")
 def home():
+    """Serves the main frontend index.html single-page application."""
     return render_template("index.html")
 
 
 @app.route("/predict", methods=["POST"])
 def predict():
+    """
+    Primary API endpoint for predicting flight prices.
+    Takes form/json payload, parses types, and hits the predictor ML model.
+    """
     data = request.get_json() if request.is_json else request.form
     payload = parse_prediction_payload(data)
     price = model_predict(payload)
     rounded = round(price, 2)
 
+    # Return raw JSON if requested strictly via API, else re-render the template
     if request.is_json:
         return {"prediction": rounded}
     return render_template("index.html", prediction=rounded)
@@ -326,10 +338,10 @@ def api_simulate():
     duration = int(data.get("duration", 180))
     days_to_departure = max(1, int(data.get("days_to_departure", 30)))
 
-    journey_date = datetime.utcnow().date() + timedelta(days=days_to_departure)
+    journey_date = datetime.now(timezone.utc).date() + timedelta(days=days_to_departure)
 
     def predict_for(airline: str, stop_count: int, duration_min: int, dep_hour_val: int, day_offset: int) -> float:
-        date_for_prediction = datetime.utcnow().date() + timedelta(days=max(1, day_offset))
+        date_for_prediction = datetime.now(timezone.utc).date() + timedelta(days=max(1, day_offset))
         payload = {
             "airline": airline,
             "source": source,
@@ -346,13 +358,17 @@ def api_simulate():
         }
         return model_predict(payload)
 
+    # Base model prediction with exact user parameters
     baseline = predict_for(base_airline, stops, duration, dep_hour, days_to_departure)
+    
+    # 1. Compare prices against the top 5 competing airlines
     comparison = []
     for airline in SIMULATION_AIRLINES:
         value = predict_for(airline, stops, duration, dep_hour, days_to_departure)
         comparison.append({"airline": airline, "price": round(value, 2)})
     comparison.sort(key=lambda x: x["price"])
 
+    # 2. What-If scenarios: run the ML model 3 additional times perturbing specific variables
     stop_variant = predict_for(base_airline, min(MAX_STOPS, stops + 1), duration, dep_hour, days_to_departure)
     duration_variant = predict_for(base_airline, stops, duration + 60, dep_hour, days_to_departure)
     early_variant = predict_for(base_airline, stops, duration, dep_hour, days_to_departure + 14)
@@ -371,5 +387,8 @@ def api_simulate():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # WARNING: Do not use `app.run()` in a true production environment.
+    # Instead, use a WSGI server like Gunicorn (Linux) or Waitress (Windows).
+    # Example: waitress-serve --host=0.0.0.0 --port=5000 app:app
+    app.run(host="0.0.0.0", port=5000, debug=False)
 

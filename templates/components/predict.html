@@ -1,0 +1,136 @@
+<!-- ============ PREDICT ============ -->
+<div class="page" id="page-predict">
+    <div class="section">
+        <div class="section-label">// ML Model</div>
+        <div class="section-title">Price Prediction</div>
+
+        <div class="predict-grid">
+            <!-- FORM -->
+            <div class="predict-form-card">
+                <div class="form-title">✈ Enter Flight Details</div>
+                <!-- wrap the inputs in a real HTML form so we can fall back to a normal POST if JS is disabled -->
+                <form id="predict-form" action="/predict" method="post"
+                    onsubmit="event.preventDefault(); updatePrediction()">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Airline</label>
+                            <select id="p-airline" name="airline">
+                                <option>IndiGo</option>
+                                <option>Air India</option>
+                                <option>Jet Airways</option>
+                                <option>SpiceJet</option>
+                                <option>Multiple carriers</option>
+                                <option>GoAir</option>
+                                <option>Vistara</option>
+                                <option>Air Asia</option>
+                                <option>Vistara Premium economy</option>
+                                <option>Jet Airways Business</option>
+                                <option>Multiple carriers Premium economy</option>
+                                <option>Trujet</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Total Stops</label>
+                            <select id="p-stops" name="stops">
+                                <option value="0">Non-stop</option>
+                                <option value="1" selected>1 stop</option>
+                                <option value="2">2 stops</option>
+                                <option value="3">3 stops</option>
+                                <option value="4">4 stops</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Source</label>
+                            <select id="p-src" name="source">
+                                <option>Banglore</option>
+                                <option>Kolkata</option>
+                                <option>Delhi</option>
+                                <option>Chennai</option>
+                                <option>Mumbai</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Destination</label>
+                            <select id="p-dst" name="destination">
+                                <option>New Delhi</option>
+                                <option>Banglore</option>
+                                <option>Cochin</option>
+                                <option>Kolkata</option>
+                                <option>Delhi</option>
+                                <option>Hyderabad</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Journey Day</label>
+                            <input type="number" id="p-day" name="journey_day" value="15" min="1" max="31" />
+                        </div>
+                        <div class="form-group">
+                            <label>Journey Month</label>
+                            <select id="p-month" name="journey_month">
+                                <option value="1">January</option>
+                                <option value="2">February</option>
+                                <option value="3">March</option>
+                                <option value="4" selected>April</option>
+                                <option value="5">May</option>
+                                <option value="6">June</option>
+                                <option value="7">July</option>
+                                <option value="8">August</option>
+                                <option value="9">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Departure Hour</label>
+                            <input type="number" id="p-hour" name="dep_hour" value="10" min="0" max="23" />
+                        </div>
+                        <div class="form-group">
+                            <label>Duration (mins)</label>
+                            <input type="number" id="p-dur" name="duration" value="180" min="30" max="900" />
+                        </div>
+                    </div>
+                    <button type="submit" class="predict-btn">⚡ Predict Ticket Price</button>
+                </form>
+            </div>
+
+            <!-- RESULT -->
+            <div class="result-card">
+                <div class="form-title">📊 Prediction Result</div>
+
+                <div class="result-price-block">
+                    <div class="result-label">Estimated Price</div>
+                    <div class="result-price" id="result-price">₹{% if prediction %}{{ prediction }}{% else %}--{% endif
+                        %}</div>
+                    <div class="result-range" id="result-range">
+                        {% if prediction %}
+                        Expected range: ₹{{ prediction-350 }} – ₹{{ prediction+360 }}
+                        {% else %}
+                        Expected range: --
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div>
+                    <div class="analytics-card-title" style="margin-bottom:0.75rem;">Key Insights</div>
+                    <div class="insights-list">
+                        <div class="insight-item">
+                            <div class="insight-dot"></div>Prediction is generated from the trained model on current
+                            input values.
+                        </div>
+                        <div class="insight-item">
+                            <div class="insight-dot"></div>Use the simulator to test stop count, duration, and
+                            departure-time impact.
+                        </div>
+                        <div class="insight-item">
+                            <div class="insight-dot"></div>Analytics panels below are loaded from backend dataset
+                            aggregates.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+</div>

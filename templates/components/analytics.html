@@ -1,0 +1,101 @@
+<!-- ============ ANALYTICS ============ -->
+<div class="page" id="page-analytics">
+    <div class="section">
+        <div class="section-label">// Exploratory Data Analysis</div>
+        <div class="section-title">Flight Analytics</div>
+
+        <!-- FEATURE IMPORTANCE ROW -->
+        <div class="analytics-card" style="margin-bottom: 2rem;">
+            <div class="analytics-card-header">
+                <div class="analytics-card-title">Top 10 Important Features for Flight Price Prediction</div>
+                <button class="code-btn" onclick="showCode('fi')">&lt;/&gt; Code</button>
+            </div>
+            <div style="height: 350px; width: 100%; position: relative;">
+                <canvas id="fi-canvas"></canvas>
+            </div>
+        </div>
+
+        <!-- TOP ROW -->
+        <div class="analytics-grid">
+            <!-- Airline Chart -->
+            <div class="analytics-card">
+                <div class="analytics-card-header">
+                    <div class="analytics-card-title">Avg Price by Airline (₹)</div>
+                    <button class="code-btn" onclick="showCode('airline')">&lt;/&gt; Code</button>
+                </div>
+                <div style="position: relative; height: 300px; width: 100%;">
+                    <canvas id="airline-canvas"></canvas>
+                </div>
+            </div>
+
+            <!-- Stops Chart -->
+            <div class="analytics-card">
+                <div class="analytics-card-header">
+                    <div class="analytics-card-title">Price by Number of Stops</div>
+                    <button class="code-btn" onclick="showCode('stops')">&lt;/&gt; Code</button>
+                </div>
+                <div style="position: relative; height: 300px; width: 100%;">
+                    <canvas id="stops-canvas"></canvas>
+                </div>
+            </div>
+
+            <!-- Routes -->
+            <div class="analytics-card">
+                <div class="analytics-card-header">
+                    <div class="analytics-card-title">Top Routes by Price</div>
+                    <button class="code-btn" onclick="showCode('routes')">&lt;/&gt; Code</button>
+                </div>
+                <table class="route-table">
+                    <thead>
+                        <tr>
+                            <th>Route</th>
+                            <th>Avg Price</th>
+                            <th>Tag</th>
+                        </tr>
+                    </thead>
+                    <tbody id="route-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- BOTTOM ROW -->
+        <div class="big-analytics">
+            <!-- Airline share donut -->
+            <div class="analytics-card">
+                <div class="analytics-card-header">
+                    <div class="analytics-card-title">Airline Market Share</div>
+                    <button class="code-btn" onclick="showCode('market')">&lt;/&gt; Code</button>
+                </div>
+                <div style="position: relative; height: 250px; width: 100%; display: flex; justify-content: center;">
+                    <canvas id="market-canvas"></canvas>
+                </div>
+                <div id="market-legend" style="display:flex;flex-wrap:wrap;gap:0.5rem;justify-content:center">
+                </div>
+            </div>
+
+            <!-- Time of day -->
+            <div class="analytics-card">
+                <div class="analytics-card-header">
+                    <div class="analytics-card-title">Price by Departure Time Slot</div>
+                    <button class="code-btn" onclick="showCode('time')">&lt;/&gt; Code</button>
+                </div>
+                <div style="position: relative; height: 300px; width: 100%;">
+                    <canvas id="time-canvas"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CODE MODAL -->
+<div class="modal-backdrop" id="code-modal" onclick="closeCode(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <div class="modal-title">Backend Python Code</div>
+            <button class="modal-close" onclick="closeCode()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <pre><code id="code-snippet-body" class="language-python"></code></pre>
+        </div>
+    </div>
+</div>
