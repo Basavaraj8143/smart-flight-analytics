@@ -43,7 +43,7 @@ nav {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(5, 10, 20, 0.85);
+  background: rgba(5, 10, 20, 0.92);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
   padding: 0 2rem;
@@ -51,6 +51,15 @@ nav {
   align-items: center;
   justify-content: space-between;
   height: 64px;
+  gap: 2rem;
+}
+
+.nav-left,
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
 }
 
 .logo {
@@ -67,33 +76,73 @@ nav {
 
 .nav-links {
   display: flex;
-  gap: 2rem;
+  gap: 0.25rem;
+  flex: 1;
+  justify-content: center;
 }
 
 .nav-links a {
   color: var(--muted);
   text-decoration: none;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   letter-spacing: 1px;
   text-transform: uppercase;
-  transition: color 0.2s;
+  transition: color 0.2s, background 0.2s;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 4px;
 }
 
 .nav-links a:hover,
 .nav-links a.active {
   color: var(--accent);
+  background: rgba(0, 212, 255, 0.06);
 }
 
 .nav-badge {
   background: var(--accent);
   color: var(--bg);
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   font-weight: 700;
-  padding: 4px 10px;
+  padding: 3px 8px;
   border-radius: 2px;
   letter-spacing: 1px;
   font-family: 'Syne', sans-serif;
+}
+
+/* Hamburger button */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.hamburger span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--text);
+  transition: transform 0.3s, opacity 0.3s;
+  transform-origin: center;
+}
+
+.hamburger.open span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.hamburger.open span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger.open span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
 }
 
 /* PAGES */
@@ -982,33 +1031,67 @@ svg.donut-chart {
     grid-template-columns: 1fr;
   }
 
-  /* Navigation */
+  /* Navigation - hamburger mode */
   nav {
-    flex-direction: column;
-    height: auto;
-    padding: 0.5rem 1rem;
-    gap: 0.5rem;
+    flex-direction: row;
+    /* Keep as single row: logo | hamburger */
+    height: 56px;
+    padding: 0 1rem;
+    gap: 0;
+    position: relative;
   }
 
   .nav-links {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.5rem;
-    font-size: 0.75rem;
+    display: none;
+    /* Hidden on mobile by default */
+    position: absolute;
+    top: 56px;
+    left: 0;
+    right: 0;
+    background: rgba(5, 10, 20, 0.98);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    flex-direction: column;
+    gap: 0;
+    z-index: 99;
+    padding: 0.5rem 0;
+  }
+
+  .nav-links.open {
+    display: flex;
+    /* Slides open when toggled */
+  }
+
+  .nav-links a {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.8rem;
+    gap: 10px;
+    border-radius: 0;
+  }
+
+  .nav-links a:last-child {
+    border-bottom: none;
+  }
+
+  .hamburger {
+    display: flex;
+    /* Show hamburger on mobile */
   }
 
   .nav-badge {
-    position: absolute;
-    top: 0.5rem;
-    right: 1rem;
     font-size: 0.5rem;
+    padding: 2px 6px;
   }
 
   /* Hero Adjustments */
   .hero {
     padding: 0.5rem;
-    padding-top: 1rem;
+    padding-top: 2.5rem;
     min-height: auto;
+    /* Removes the 100vh that creates empty space below stats */
+    justify-content: flex-start;
+    /* Stop forcing vertical centering on mobile */
   }
 
   .hero p {

@@ -3,6 +3,23 @@ let analyticsCache = null;
 let simStops = 1;
 let charts = {};
 
+function toggleMenu() {
+  const links = document.getElementById('nav-links');
+  const btn = document.getElementById('hamburger-btn');
+  if (links) links.classList.toggle('open');
+  if (btn) btn.classList.toggle('open');
+}
+
+function closeMenu() {
+  const links = document.getElementById('nav-links');
+  const btn = document.getElementById('hamburger-btn');
+  if (links) links.classList.remove('open');
+  if (btn) btn.classList.remove('open');
+}
+
+window.toggleMenu = toggleMenu;
+window.closeMenu = closeMenu;
+
 function formatInr(value) {
   return `₹${Math.round(Number(value || 0)).toLocaleString('en-IN')}`;
 }

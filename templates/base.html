@@ -15,15 +15,50 @@
 <body>
 
     <!-- NAV -->
-    <nav>
-        <div class="logo">Sky<span>IQ</span></div>
-        <div class="nav-links">
-            <a onclick="showPage('home')" class="active" id="nav-home">Home</a>
-            <a onclick="showPage('predict')" id="nav-predict">Predict</a>
-            <a onclick="showPage('simulator')" id="nav-simulator">Simulator</a>
-            <a onclick="showPage('analytics')" id="nav-analytics">Analytics</a>
+    <nav id="main-nav">
+        <div class="nav-left">
+            <div class="logo">Sky<span>IQ</span></div>
         </div>
-        <div class="nav-badge">BETA</div>
+
+        <!-- Desktop nav links -->
+        <div class="nav-links" id="nav-links">
+            <a onclick="showPage('home');closeMenu()" class="active" id="nav-home">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+                </svg>
+                Home
+            </a>
+            <a onclick="showPage('predict');closeMenu()" id="nav-predict">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+                </svg>
+                Predict
+            </a>
+            <a onclick="showPage('simulator');closeMenu()" id="nav-simulator">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
+                </svg>
+                Simulator
+            </a>
+            <a onclick="showPage('analytics');closeMenu()" id="nav-analytics">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M5 9.2h3V19H5V9.2zM10.6 5h2.8v14h-2.8V5zm5.6 8H19v6h-2.8v-6z" />
+                </svg>
+                Analytics
+            </a>
+        </div>
+
+        <div class="nav-right">
+            <div class="nav-badge">BETA</div>
+            <!-- Hamburger Button (mobile only) -->
+            <button class="hamburger" id="hamburger-btn" onclick="toggleMenu()" aria-label="Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
     </nav>
 
     <!-- TICKER -->
