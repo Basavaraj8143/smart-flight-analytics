@@ -349,6 +349,19 @@ function renderSummary(summary) {
   if (statAvgPrice) statAvgPrice.textContent = formatInr(summary.avg_price || 0);
 }
 
+function renderSummary(summary) {
+  if (!summary) return;
+  const fEl = document.getElementById('stat-flights');
+  const aEl = document.getElementById('stat-airlines');
+  const rEl = document.getElementById('stat-routes');
+  const pEl = document.getElementById('stat-avg-price');
+
+  if (fEl) fEl.textContent = summary.flights_analyzed.toLocaleString();
+  if (aEl) aEl.textContent = summary.airlines.toLocaleString();
+  if (rEl) rEl.textContent = summary.routes.toLocaleString();
+  if (pEl) pEl.textContent = formatInr(summary.avg_price);
+}
+
 function renderAnalytics(data) {
   renderSummary(data.summary);
   renderTicker(data.ticker);
